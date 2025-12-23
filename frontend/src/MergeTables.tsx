@@ -63,7 +63,6 @@ class MergeTables extends StreamlitComponentBase<State> {
     let steps: MergeStep[] = []
 
     if (this.state.mergeMode === "chain") {
-      // Chain: T1 ⨝ T2 ⨝ T3 ...
       for (let i = 0; i < safeCount - 1; i++) {
         steps.push({
           leftTableId: tables[i].id,
@@ -74,7 +73,6 @@ class MergeTables extends StreamlitComponentBase<State> {
         })
       }
     } else {
-      // Pairwise: (T1 ⨝ T2), (T3 ⨝ T4) ...
       for (let i = 0; i < safeCount; i += 2) {
         if (i + 1 < safeCount) {
           steps.push({
@@ -185,42 +183,47 @@ class MergeTables extends StreamlitComponentBase<State> {
     return (
       <div className="merge-root">
         {/* ---------- Toolbar ---------- */}
-        <div className="merge-toolbar">
-          <label>
-            Tables:&nbsp;
-            <select
-              value={this.state.tableCount}
-              onChange={(e) =>
-                this.setState({ tableCount: Number(e.target.value) })
-              }
-            >
-              {Array.from(
-                { length: tables.length - 1 },
-                (_, i) => i + 2
-              ).map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="merge-toolbar-wrapper">
+          <div className="merge-toolbar">
+            <label className="toolbar-field">
+              <span className="toolbar-label">Tables</span>
+              <select
+                className="toolbar-select"
+                value={this.state.tableCount}
+                onChange={(e) =>
+                  this.setState({ tableCount: Number(e.target.value) })
+                }
+              >
+                {Array.from(
+                  { length: tables.length - 1 },
+                  (_, i) => i + 2
+                ).map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label style={{ marginLeft: 16 }}>
-            Mode:&nbsp;
-            <select
-              value={this.state.mergeMode}
-              onChange={(e) =>
-                this.setState({
-                  mergeMode: e.target.value as "chain" | "pairwise",
-                })
-              }
-            >
-              <option value="chain">Chain</option>
-              <option value="pairwise">Pairwise</option>
-            </select>
-          </label>
+            <label className="toolbar-field">
+              <span className="toolbar-label">Mode</span>
+              <select
+                className="toolbar-select"
+                value={this.state.mergeMode}
+                onChange={(e) =>
+                  this.setState({
+                    mergeMode: e.target.value as "chain" | "pairwise",
+                  })
+                }
+              >
+                <option value="chain">Chain</option>
+                <option value="pairwise">Pairwise</option>
+              </select>
+            </label>
+          </div>
         </div>
-
+        <br/>
+        <br/>
         {/* ---------- Merge Flow ---------- */}
         <div className="merge-canvas">
           <div className="merge-flow">
@@ -321,21 +324,26 @@ class MergeTables extends StreamlitComponentBase<State> {
             })}
           </div>
         </div>
-
+        <br/>
+        <br/>
         {/* ---------- DAG ---------- */}
         {showDAG && (
           <div style={{ marginTop: 24 }}>
-            <h4>Merge DAG</h4>
+            <h4>DAG</h4>
             <MergeDAGView dag={dag} />
           </div>
         )}
-
+        <br/>
+        <br/>
         {/* ---------- Footer ---------- */}
         <FooterActions
           onAction={this.emitMergePlan}
           disabled={!validation.valid}
           reason={validation.reason}
         />
+        <br/>
+        <br/>
+        <br/>
       </div>
     )
   }

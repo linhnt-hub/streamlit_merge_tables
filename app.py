@@ -27,6 +27,10 @@ dataframes = {
         "ifname": ["ge-0/0/0"],
         "crc": [5],
     }),
+    "errors1": pd.DataFrame({
+        "ifname": ["ge-0/0/0"],
+        "crc": [5],
+    }),
 }
 
 # ------------------------------
@@ -53,19 +57,26 @@ tables = [
         "name": "Errors",
         "columns": ["ifname", "crc"],
     },
+    {
+        "id": "errors1",
+        "name": "Errors1",
+        "columns": ["ifname", "crc"],
+    },
 ]
 
 # ------------------------------
 # LOAD MERGE STATS (PREVIEW)
 # ------------------------------
 merge_stats = st.session_state.get("merge_stats", [])
-
-merge_plan = merge_tables(
-    tables=tables,
-    stats=merge_stats,
-    # dag=True,
-    key="merge_ui",
-)
+# col1,col2 = st.columns([1,3])
+# with col2:
+with st.container(border=True):
+    merge_plan = merge_tables(
+        tables=tables,
+        stats=merge_stats,
+        dag=True,
+        # key="merge_ui",
+    )
 
 st.subheader("Returned Merge Plan")
 

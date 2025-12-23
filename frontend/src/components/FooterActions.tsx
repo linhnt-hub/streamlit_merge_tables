@@ -1,5 +1,6 @@
 import React from "react"
 import { MergePlan } from "../types"
+import { Save } from "lucide-react";
 
 interface Props {
   onAction(mode: MergePlan["saveMode"]): void
@@ -20,7 +21,8 @@ export default function FooterActions({
         title={disabled ? reason : "Execute merge"}
         onClick={() => onAction("final")}
       >
-        Save final result
+        <Save size={16} opacity={disabled ? 0.4 : 1} />
+        Merge
       </button>
 
       {disabled && reason && (

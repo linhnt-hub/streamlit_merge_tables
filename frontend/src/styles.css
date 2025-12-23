@@ -1,14 +1,32 @@
 :root {
-  --st-primary: #ff4b4b;
-  --st-border: #e5e7eb;
-  --st-bg: #ffffff;
-  --st-muted: #6b7280;
-  --st-card: #f9fafb;
+  /* Map trực tiếp từ Streamlit theme */
+  --st-primary: var(--primary-color);
+  --st-bg: var(--background-color);
+  --st-card: var(--secondary-background-color);
+  --st-text: var(--text-color);
+
+  /* Derivatives */
+  --st-border: color-mix(
+    in srgb,
+    var(--st-text) 12%,
+    transparent
+  );
+
+  --st-muted: color-mix(
+    in srgb,
+    var(--st-text) 55%,
+    transparent
+  );
 
   --radius: 8px;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 2px color-mix(in srgb, #000 15%, transparent);
 
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--st-bg);
+  color: var(--st-text);
 }
 
 .merge-flow {
@@ -18,12 +36,32 @@
 }
 
 .table-card {
-  background: var(--st-card);
-  border: 1px solid var(--st-border);
+  /* Glass background */
+  background: color-mix(
+    in srgb,
+    var(--st-card) 75%,
+    transparent
+  );
+
+  /* Glass effect */
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+
+  /* Border */
+  border: 1px solid color-mix(
+    in srgb,
+    var(--st-text) 12%,
+    transparent
+  );
+
   border-radius: var(--radius);
   padding: 12px;
   min-width: 220px;
-  box-shadow: var(--shadow);
+
+  /* Soft shadow */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .table-select {
@@ -31,6 +69,14 @@
   padding: 6px 8px;
   border-radius: var(--radius);
   border: 1px solid var(--st-border);
+  background: var(--st-bg);
+  color: var(--st-text);
+}
+
+.table-select:focus {
+  outline: none;
+  border-color: var(--st-primary);
+  box-shadow: 0 0 0 1px var(--st-primary);
 }
 
 .chip-container {
@@ -42,11 +88,11 @@
 
 .chip {
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius);
   font-size: 12px;
   border: 1px solid var(--st-border);
   cursor: pointer;
-  background: white;
+  background: var(--st-bg);
 }
 
 .chip.active {
@@ -68,7 +114,7 @@
 .footer-actions {
   margin-top: 16px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 10px;
 }
 
@@ -86,6 +132,15 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+.footer-actions button.primary:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.footer-actions button.primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--st-primary) 40%, transparent);
+}
 
 .join-connector {
   display: flex;
@@ -99,5 +154,91 @@
   padding: 4px 10px;
   font-size: 12px;
   border: 1px solid var(--st-border);
-  background: white;
+  background: var(--st-bg);
+  color: var(--st-text);
+}
+.merge-toolbar-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.merge-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+
+  background: var(--st-card);
+  border: 1px solid var(--st-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.toolbar-field {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* tăng khoảng cách */
+  position: relative;
+}
+.toolbar-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--st-muted);
+  white-space: nowrap;
+}
+.toolbar-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding: 6px 28px 6px 12px;
+  min-height: 28px;
+  font-size: 12px;
+  font-weight: 500;
+
+  border-radius: 999px;
+  border: 1px solid var(--st-control-border);
+
+  background: var(--st-card);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+
+  color: var(--st-text);
+  cursor: pointer;
+}
+.toolbar-select:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--st-text) 18%,
+    transparent
+  );
+}
+
+.toolbar-select:focus {
+  outline: none;
+  border-color: var(--st-primary);
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--st-primary) 35%, transparent);
+}
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 600px) {
+  .primary span {
+    display: none;
+  }
+}
+* {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
 }
