@@ -1,0 +1,103 @@
+:root {
+  --st-primary: #ff4b4b;
+  --st-border: #e5e7eb;
+  --st-bg: #ffffff;
+  --st-muted: #6b7280;
+  --st-card: #f9fafb;
+
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.merge-flow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-card {
+  background: var(--st-card);
+  border: 1px solid var(--st-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-width: 220px;
+  box-shadow: var(--shadow);
+}
+
+.table-select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--st-border);
+}
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chip {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid var(--st-border);
+  cursor: pointer;
+  background: white;
+}
+
+.chip.active {
+  background: var(--st-primary);
+  color: white;
+  border-color: var(--st-primary);
+}
+
+.chip-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--st-muted);
+}
+.merge-canvas {
+  overflow-x: auto;
+  padding: 12px 4px;
+}
+
+.footer-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.footer-actions button.primary {
+  background: var(--st-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.footer-actions button.primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.join-connector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 8px;
+}
+
+.join-connector select {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid var(--st-border);
+  background: white;
+}
