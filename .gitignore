@@ -164,7 +164,7 @@ dmypy.json
 
 # pytype static type analyzer
 .pytype/
-.frontend/node_modules/
+frontend/node_modules/
 # Cython debug symbols
 cython_debug/
 
