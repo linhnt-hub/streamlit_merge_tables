@@ -18,15 +18,16 @@ else:
     )
 
 
-def merge_tables(tables, stats=None, dag=False, key=None):
+def merge_tables(tables, dag=False, value=None, key=None):
     """
-    tables: List[dict]
-    stats:  Optional merge preview stats
-    dag:    Boolean - show DAG or not
+    tables: List[dict] -> table metadata
+    dag: bool -> show DAG or not
+    value: dict -> previous merge plan (for rehydration)
     """
     return _merge_tables(
         tables=tables,
-        stats=stats,
         dag=dag,
+        # value=value,
         key=key,
     )
+

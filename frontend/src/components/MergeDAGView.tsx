@@ -1,9 +1,11 @@
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import ReactFlow, {
   Node,
   Edge,
   Background,
   Controls,
+  ReactFlowInstance,
+  Position,
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { MergeDAG } from "../dag"
@@ -18,6 +20,8 @@ const H_GAP = 80
 const V_GAP = 90
 
 export default function MergeDAGView({ dag }: Props) {
+  const rfInstance = useRef<ReactFlowInstance | null>(null)
+
   const nodes: Node[] = []
   const edges: Edge[] = []
 
@@ -25,39 +29,57 @@ export default function MergeDAGView({ dag }: Props) {
     (n) => n.type === "source"
   )
   const mergeNodes = dag.nodes.filter(
-    (n) => n.type !== "source"
+    (n) => n.type === "merge"
   )
 
   /* ======================================================
-     CHAIN MODE → TOP TO BOTTOM
+     CHAIN MODE → LEFT TO RIGHT
      ====================================================== */
   if (dag.mode === "chain") {
-    // source row
+    // Stack source tables vertically
     sourceNodes.forEach((n, i) => {
       nodes.push({
         id: n.id,
         data: { label: n.label },
-        position: { x: i * (NODE_W + H_GAP), y: 0 },
+        position: {
+          x: 0,
+          y: i * (NODE_H + V_GAP),
+        },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Right,
         style: sourceStyle,
+        draggable: false,
+        selectable: false,
       })
     })
 
-    // merge stack
+    // Center merge nodes vertically relative to tables
+    const centerY =
+      sourceNodes.length > 1
+        ? ((sourceNodes.length - 1) *
+            (NODE_H + V_GAP)) /
+          2
+        : 0
+
     mergeNodes.forEach((n, i) => {
       nodes.push({
         id: n.id,
         data: { label: n.label },
         position: {
-          x: NODE_W + H_GAP,
-          y: (i + 1) * (NODE_H + V_GAP),
+          x: (i + 1) * (NODE_W + H_GAP),
+          y: centerY,
         },
+        targetPosition: Position.Left,
+        sourcePosition: Position.Right,
         style: mergeStyle,
+        draggable: false,
+        selectable: false,
       })
     })
   }
 
   /* ======================================================
-     PAIRWISE MODE → 2-COLUMN LAYOUT
+     PAIRWISE MODE → 2-COLUMN LAYOUT (LEFT → RIGHT)
      ====================================================== */
   if (dag.mode === "pairwise") {
     let pairIndex = 0
@@ -67,27 +89,39 @@ export default function MergeDAGView({ dag }: Props) {
       const right = sourceNodes[i + 1]
       const merge = mergeNodes[pairIndex]
 
-      const baseX = pairIndex * (NODE_W * 2 + H_GAP * 2)
+      const baseX =
+        pairIndex * (NODE_W * 2 + H_GAP * 2)
 
-      // left source
+      // Left table
       nodes.push({
         id: left.id,
         data: { label: left.label },
         position: { x: baseX, y: 0 },
+        sourcePosition: Position.Bottom,
+        targetPosition: Position.Bottom,
         style: sourceStyle,
+        draggable: false,
+        selectable: false,
       })
 
-      // right source
+      // Right table
       if (right) {
         nodes.push({
           id: right.id,
           data: { label: right.label },
-          position: { x: baseX + NODE_W + H_GAP, y: 0 },
+          position: {
+            x: baseX + NODE_W + H_GAP,
+            y: 0,
+          },
+          sourcePosition: Position.Bottom,
+          targetPosition: Position.Bottom,
           style: sourceStyle,
+          draggable: false,
+          selectable: false,
         })
       }
 
-      // merge node
+      // Merge node (centered between pair)
       if (merge) {
         nodes.push({
           id: merge.id,
@@ -97,6 +131,8 @@ export default function MergeDAGView({ dag }: Props) {
             y: NODE_H + V_GAP,
           },
           style: mergeStyle,
+          draggable: false,
+          selectable: false,
         })
       }
 
@@ -106,30 +142,71 @@ export default function MergeDAGView({ dag }: Props) {
 
   /* ---------------- EDGES ---------------- */
   dag.edges.forEach((e, i) => {
+    const keyLabel =
+      e.leftKeys?.length && e.rightKeys?.length
+        ? `${e.leftKeys.join(", ")} = ${e.rightKeys.join(", ")}`
+        : ""
+
     edges.push({
       id: `e-${i}`,
       source: e.from,
       target: e.to,
+
+      // 🔑 EDGE THẲNG
+      // type: "straight",
+      type: "default",
+
+      // 🔑 LABEL HIỂN THỊ ĐỦ
+      label: `${e.joinType}${keyLabel ? "\n" + keyLabel : ""}`,
+      labelStyle: {
+        fontSize: 11,
+        fill: "#374151",
+        whiteSpace: "pre-line",
+      },
+      labelBgPadding: [6, 4],
+      labelBgBorderRadius: 6,
+      labelBgStyle: {
+        fill: "#ffffff",
+        fillOpacity: 0.9,
+      },
       animated: true,
-      label: `${e.joinType}\n${e.leftKeys.join(
-        ","
-      )} = ${e.rightKeys.join(",")}`,
-      style: { strokeWidth: 2 },
+      style: {
+        strokeWidth: 1,
+        stroke: "#9ca3af",
+      },
     })
   })
 
+
+  /* ---------------- AUTO FIT VIEW ---------------- */
+  useEffect(() => {
+    if (rfInstance.current) {
+      setTimeout(() => {
+        rfInstance.current?.fitView({ padding: 0.25 })
+      }, 50)
+    }
+  }, [dag])
+
   return (
-    <div style={{ height: 420 }}>
+    <div style={{ height: 420, marginBottom: 16 }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        fitView
+        onInit={(instance) => {
+          rfInstance.current = instance
+          instance.fitView({ padding: 0.25 })
+        }}
         nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
         zoomOnScroll={false}
-        panOnScroll
+        zoomOnPinch={false}
+        panOnScroll={false}
+        panOnDrag={false}
+        preventScrolling={true}
       >
         <Background />
-        <Controls />
+        <Controls showInteractive={false} />
       </ReactFlow>
     </div>
   )

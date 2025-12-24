@@ -31,6 +31,10 @@ dataframes = {
         "ifname": ["ge-0/0/0"],
         "crc": [5],
     }),
+    "errors2": pd.DataFrame({
+        "ifname": ["ge-0/0/0"],
+        "crc": [7],
+    }),
 }
 
 # ------------------------------
@@ -62,6 +66,11 @@ tables = [
         "name": "Errors1",
         "columns": ["ifname", "crc"],
     },
+    {
+        "id": "errors2",
+        "name": "Errors2",
+        "columns": ["ifname", "crc"],
+    },
 ]
 
 # ------------------------------
@@ -70,13 +79,17 @@ tables = [
 merge_stats = st.session_state.get("merge_stats", [])
 # col1,col2 = st.columns([1,3])
 # with col2:
+if "merge_plan" not in st.session_state:
+    st.session_state.merge_plan = None
 with st.container(border=True):
     merge_plan = merge_tables(
         tables=tables,
-        stats=merge_stats,
         dag=True,
-        # key="merge_ui",
+        value=st.session_state.merge_plan,
+        key="merge_ui",
     )
+if merge_plan:
+    st.session_state.merge_plan = merge_plan
 
 st.subheader("Returned Merge Plan")
 
