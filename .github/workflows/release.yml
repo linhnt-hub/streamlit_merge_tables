@@ -28,10 +28,10 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Copy frontend build into Python package
-        run: |
-          rm -rf src/streamlit_merge_tables/streamlit_component/frontend
-          cp -r frontend/dist src/streamlit_merge_tables/streamlit_component/frontend
+      # - name: Copy frontend build into Python package
+      #   run: |
+      #     rm -rf src/streamlit_merge_tables/streamlit_component/frontend
+      #     cp -r frontend/dist src/streamlit_merge_tables/streamlit_component/frontend
 
       # ---------- PYTHON ----------
       - name: Setup Python
