@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streamlit-merge-tables"
+version = "0.1.0"
+description = "Visual table merge tool for Streamlit"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "Tuan Nguyen" }
+]
+dependencies = [
+  "streamlit>=1.30",
+  "pandas"
+]
+
+[project.scripts]
+streamlit-merge-tables = "streamlit_merge_tables.app:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -5,7 +5,7 @@ export default defineConfig({
   base: "./",
   plugins: [react()],
   build: {
-    outDir: "../streamlit_component/frontend",
+    outDir: "../src/streamlit_merge_tables/streamlit_component/frontend",
     emptyOutDir: true
   }
 })

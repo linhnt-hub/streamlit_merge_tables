@@ -1,0 +1,1 @@
+recursive-include src/streamlit_merge_tables/streamlit_component/frontend *

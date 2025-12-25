@@ -34,7 +34,6 @@ class MergeTables extends StreamlitComponentBase<State> {
   }
 
   componentDidUpdate(prevProps: any, prevState: State) {
-    // 🔑 rehydrate when Python sends value back
     if (this.props.args?.value !== prevProps.args?.value) {
       this.hydrateFromValue()
     }
@@ -72,7 +71,6 @@ class MergeTables extends StreamlitComponentBase<State> {
   /* ===================== initialize ===================== */
 
   initializeStepsIfNeeded() {
-    // ❗ nếu đã có value từ Python thì KHÔNG reset
     if (this.props.args?.value?.steps?.length) return
 
     const tables: TableMeta[] = Array.isArray(this.props.args?.tables)
