@@ -4,13 +4,28 @@ import re
 
 version = sys.argv[1]
 
+root = Path(__file__).resolve().parent.parent
+src_dir = root / "src"
+
+# tìm package Python đầu tiên trong src/
+packages = [p for p in src_dir.iterdir() if p.is_dir()]
+
+if not packages:
+    raise RuntimeError("No Python package found in src/")
+
+package_dir = packages[0]
+
 files = [
-    Path("pyproject.toml"),
-    Path("src/streamlit_merge_tables/__init__.py"),
-    Path("frontend/package.json"),
+    root / "pyproject.toml",
+    package_dir / "__init__.py",
+    root / "frontend" / "package.json",
 ]
 
 for file in files:
+    if not file.exists():
+        print(f"⚠️ Skip missing file: {file}")
+        continue
+
     text = file.read_text()
 
     text = re.sub(
@@ -27,5 +42,4 @@ for file in files:
 
     file.write_text(text)
 
-print(f"Version bumped to {version}")
-
+print(f"✅ Version bumped to {version}")
