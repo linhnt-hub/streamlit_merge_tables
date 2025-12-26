@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/linhnt-hub/streamlit_merge_tables/compare/v1.0.0...v1.0.1) (2025-12-26)
+
+
+### Bug Fixes
+
+* final merge-root ([89802c8](https://github.com/linhnt-hub/streamlit_merge_tables/commit/89802c88dcba92fc97361d170e6f8e07f4c0bd7a))
+* final version of DAG ([f16ee8c](https://github.com/linhnt-hub/streamlit_merge_tables/commit/f16ee8c73e6761f7563b1dbf36dcd158d5e6b503))
+
 # 1.0.0 (2025-12-25)
 
 
