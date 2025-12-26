@@ -25,24 +25,15 @@ export interface MergeDAG {
 export function buildMergeDAG(
   tables: { id: string; name: string }[],
   mergeSteps: any[],
-  mode: "chain" | "pairwise",
-  stats: any[] = []
+  mode: "chain" | "pairwise"
 ): MergeDAG {
   const nodes: DAGNode[] = []
   const edges: DAGEdge[] = []
 
-  /* ---------------- SOURCE TABLE NODES ---------------- */
-  tables.forEach((t) => {
-    nodes.push({
-      id: t.id,
-      label: t.name,
-      type: "source",
-    })
-  })
+  tables.forEach((t) =>
+    nodes.push({ id: t.id, label: t.name, type: "source" })
+  )
 
-  /* =====================================================
-     CHAIN MODE – PIPELINE
-     ===================================================== */
   if (mode === "chain") {
     let prevMergeId: string | null = null
 
@@ -56,7 +47,6 @@ export function buildMergeDAG(
       })
 
       if (idx === 0) {
-        // Merge1: table + table
         edges.push({
           from: step.leftTableId,
           to: mergeId,
@@ -64,7 +54,6 @@ export function buildMergeDAG(
           leftKeys: step.leftKeys,
           rightKeys: step.rightKeys,
         })
-
         edges.push({
           from: step.rightTableId,
           to: mergeId,
@@ -73,15 +62,13 @@ export function buildMergeDAG(
           rightKeys: step.rightKeys,
         })
       } else {
-        // MergeN: previous merge + next table
         edges.push({
           from: prevMergeId!,
           to: mergeId,
           joinType: step.joinType,
-          leftKeys: step.leftKeys,
-          rightKeys: step.rightKeys,
+          leftKeys: [],
+          rightKeys: [],
         })
-
         edges.push({
           from: step.rightTableId,
           to: mergeId,
@@ -94,19 +81,11 @@ export function buildMergeDAG(
       prevMergeId = mergeId
     })
 
-    /* -------- RESULT NODE -------- */
-    if (mergeSteps.length > 0) {
-      const resultId = "result"
-
-      nodes.push({
-        id: resultId,
-        label: "Result",
-        type: "result",
-      })
-
+    if (mergeSteps.length) {
+      nodes.push({ id: "result", label: "Result", type: "result" })
       edges.push({
         from: `merge_${mergeSteps.length}`,
-        to: resultId,
+        to: "result",
         joinType: "output",
         leftKeys: [],
         rightKeys: [],
@@ -114,50 +93,32 @@ export function buildMergeDAG(
     }
   }
 
-  /* =====================================================
-     PAIRWISE MODE (KHÔNG THAY ĐỔI LOGIC)
-     ===================================================== */
   if (mode === "pairwise") {
-    let mergeIndex = 0
-
-    for (let i = 0; i < mergeSteps.length; i++) {
-      const step = mergeSteps[i]
-      mergeIndex++
-
-      const mergeId = `merge_${mergeIndex}`
-
-      nodes.push({
-        id: mergeId,
-        label: `Merge ${mergeIndex}`,
-        type: "merge",
-      })
-
+    let idx = 0
+    mergeSteps.forEach((s) => {
+      idx++
+      const mergeId = `merge_${idx}`
+      nodes.push({ id: mergeId, label: `Merge ${idx}`, type: "merge" })
       edges.push({
-        from: step.leftTableId,
+        from: s.leftTableId,
         to: mergeId,
-        joinType: step.joinType,
-        leftKeys: step.leftKeys,
-        rightKeys: step.rightKeys,
+        joinType: s.joinType,
+        leftKeys: s.leftKeys,
+        rightKeys: s.rightKeys,
       })
-
       edges.push({
-        from: step.rightTableId,
+        from: s.rightTableId,
         to: mergeId,
-        joinType: step.joinType,
-        leftKeys: step.leftKeys,
-        rightKeys: step.rightKeys,
+        joinType: s.joinType,
+        leftKeys: s.leftKeys,
+        rightKeys: s.rightKeys,
       })
-    }
+    })
 
-    if (mergeIndex > 0) {
-      nodes.push({
-        id: "result",
-        label: "Result",
-        type: "result",
-      })
-
+    if (idx) {
+      nodes.push({ id: "result", label: "Result", type: "result" })
       edges.push({
-        from: `merge_${mergeIndex}`,
+        from: `merge_${idx}`,
         to: "result",
         joinType: "output",
         leftKeys: [],

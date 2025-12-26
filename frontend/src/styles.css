@@ -162,9 +162,10 @@ body {
   display: flex;
   justify-content: center;
 }
+
 .merge-toolbar {
   display: flex;
-  align-items: center;
+  align-self: center;
   gap: 16px;
 
   width: fit-content;
@@ -241,4 +242,9 @@ body {
     border-color 0.25s ease,
     color 0.25s ease,
     box-shadow 0.25s ease;
+}
+
+.merge-edge:hover {
+  stroke-width: 1;
+  stroke: #111827;
 }

@@ -1,4 +1,6 @@
-import React, { useEffect, useRef } from "react"
+// frontend/src/components/MergeDAGView.tsx
+
+import React, { useEffect, useMemo, useRef } from "react"
 import ReactFlow, {
   Node,
   Edge,
@@ -9,6 +11,7 @@ import ReactFlow, {
 } from "reactflow"
 import "reactflow/dist/style.css"
 import { MergeDAG } from "../dag"
+import CenteredBezierEdge from "./CenteredBezierEdge"
 
 interface Props {
   dag: MergeDAG
@@ -19,6 +22,10 @@ const NODE_H = 48
 const H_GAP = 80
 const V_GAP = 90
 
+const edgeTypes = {
+  centered: CenteredBezierEdge,
+}
+
 export default function MergeDAGView({ dag }: Props) {
   const rfInstance = useRef<ReactFlowInstance | null>(null)
 
@@ -27,13 +34,15 @@ export default function MergeDAGView({ dag }: Props) {
 
   const sourceNodes = dag.nodes.filter((n) => n.type === "source")
   const mergeNodes = dag.nodes.filter((n) => n.type === "merge")
-  const resultNode = dag.nodes.find((n) => n.type === "result")
 
-  /* ======================================================
-     CHAIN MODE – LEFT → RIGHT
-     ====================================================== */
+  /* =====================================================
+     CHAIN MODE
+     ===================================================== */
   if (dag.mode === "chain") {
-    // Sources
+    const dagHeight =
+      sourceNodes.length * NODE_H +
+      (sourceNodes.length - 1) * V_GAP
+
     sourceNodes.forEach((n, i) => {
       nodes.push({
         id: n.id,
@@ -46,83 +55,131 @@ export default function MergeDAGView({ dag }: Props) {
       })
     })
 
-    // Merges
+    const mergeY = dagHeight / 2 - NODE_H / 2
+
     mergeNodes.forEach((n, i) => {
       nodes.push({
         id: n.id,
         data: { label: n.label },
         position: {
           x: (i + 1) * (NODE_W + H_GAP),
-          y: i * (NODE_H + V_GAP),
+          y: mergeY,
         },
-        sourcePosition: Position.Right,
         targetPosition: Position.Left,
+        sourcePosition: Position.Right,
         style: mergeStyle,
         draggable: false,
         selectable: false,
       })
     })
+  }
 
-    // Result
-    if (resultNode) {
-      nodes.push({
-        id: resultNode.id,
-        data: { label: resultNode.label },
-        position: {
-          x: (mergeNodes.length + 1) * (NODE_W + H_GAP),
-          y:
-            ((mergeNodes.length - 1) * (NODE_H + V_GAP)) /
-            2,
-        },
-        targetPosition: Position.Left,
-        style: resultStyle,
-        draggable: false,
-        selectable: false,
-      })
+  /* =====================================================
+     PAIRWISE MODE (RESTORED)
+     ===================================================== */
+  if (dag.mode === "pairwise") {
+    let pairIndex = 0
+
+    for (let i = 0; i < sourceNodes.length; i += 2) {
+      const left = sourceNodes[i]
+      const right = sourceNodes[i + 1]
+      const merge = mergeNodes[pairIndex]
+
+      const baseX = pairIndex * (NODE_W * 2 + H_GAP * 2)
+
+      if (left) {
+        nodes.push({
+          id: left.id,
+          data: { label: left.label },
+          position: { x: baseX, y: 0 },
+          sourcePosition: Position.Bottom,
+          style: sourceStyle,
+          draggable: false,
+          selectable: false,
+        })
+      }
+
+      if (right) {
+        nodes.push({
+          id: right.id,
+          data: { label: right.label },
+          position: { x: baseX + NODE_W + H_GAP, y: 0 },
+          sourcePosition: Position.Bottom,
+          style: sourceStyle,
+          draggable: false,
+          selectable: false,
+        })
+      }
+
+      if (merge && left && right) {
+        nodes.push({
+          id: merge.id,
+          data: { label: merge.label },
+          position: {
+            x: baseX + NODE_W / 2 + H_GAP / 2,
+            y: NODE_H + V_GAP,
+          },
+          targetPosition: Position.Top,
+          style: mergeStyle,
+          draggable: false,
+          selectable: false,
+        })
+      }
+
+      pairIndex++
     }
   }
 
-  /* ---------------- EDGES ---------------- */
+  /* ================= AUTO HEIGHT ================= */
+
+  const canvasHeight = useMemo(() => {
+    if (!nodes.length) return 260
+    const ys = nodes.map((n) => n.position.y)
+    return Math.max(
+      Math.max(...ys) - Math.min(...ys) + NODE_H + 80,
+      260
+    )
+  }, [nodes])
+
+  /* ================= EDGES ================= */
+
   dag.edges.forEach((e, i) => {
+    if (e.to === "result") return
+
     const label =
       e.joinType === "output"
-        ? "output"
+        ? ""
         : `${e.joinType}\n${e.leftKeys.join(",")}=${e.rightKeys.join(",")}`
 
     edges.push({
       id: `e-${i}`,
       source: e.from,
       target: e.to,
-      type: "default",
+      type: "centered",
+      animated: false,
       label,
       labelStyle: {
         fontSize: 11,
         whiteSpace: "pre-line",
       },
-      animated: true,
       style: {
         strokeWidth: 2,
-        stroke:
-          e.joinType === "output" ? "#10b981" : "#9ca3af",
+        stroke: "#9ca3af",
       },
     })
   })
 
   useEffect(() => {
-    if (rfInstance.current) {
-      rfInstance.current.fitView({ padding: 0.25 })
-    }
+    rfInstance.current?.fitView({ padding: 0.25 })
   }, [dag])
 
   return (
-    <div style={{ height: 420 }}>
+    <div style={{ height: canvasHeight }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onInit={(inst) => {
-          rfInstance.current = inst
-          inst.fitView({ padding: 0.25 })
-        }}
+        edgeTypes={edgeTypes}
+        onInit={(i) => (rfInstance.current = i)}
         nodesDraggable={false}
         nodesConnectable={false}
         zoomOnScroll={false}
@@ -135,8 +192,6 @@ export default function MergeDAGView({ dag }: Props) {
   )
 }
 
-/* ================= STYLES ================= */
-
 const sourceStyle = {
   border: "1px solid #e5e7eb",
   borderRadius: 8,
@@ -148,11 +203,4 @@ const mergeStyle = {
   borderRadius: 8,
   background: "#fff5f5",
   fontWeight: 600,
-}
-
-const resultStyle = {
-  border: "2px solid #10b981",
-  borderRadius: 999,
-  background: "#ecfdf5",
-  fontWeight: 700,
 }
