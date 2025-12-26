@@ -1,131 +1,132 @@
-// frontend/src/dag.ts
+import { MergeStep, JoinType } from "./types"
 
-export type DAGNodeType = "source" | "merge" | "result"
+/* ================= Types ================= */
 
-export interface DAGNode {
+export interface MergeNode {
   id: string
+  type: "source" | "merge"
   label: string
-  type: DAGNodeType
 }
 
-export interface DAGEdge {
+export interface MergeEdge {
   from: string
   to: string
-  joinType: string
+  joinType: JoinType
   leftKeys: string[]
   rightKeys: string[]
 }
 
 export interface MergeDAG {
   mode: "chain" | "pairwise"
-  nodes: DAGNode[]
-  edges: DAGEdge[]
+  nodes: MergeNode[]
+  edges: MergeEdge[]
 }
+
+/* ================= Builder ================= */
 
 export function buildMergeDAG(
   tables: { id: string; name: string }[],
-  mergeSteps: any[],
+  steps: MergeStep[],
   mode: "chain" | "pairwise"
 ): MergeDAG {
-  const nodes: DAGNode[] = []
-  const edges: DAGEdge[] = []
+  const nodes: MergeNode[] = []
+  const edges: MergeEdge[] = []
 
-  tables.forEach((t) =>
-    nodes.push({ id: t.id, label: t.name, type: "source" })
-  )
-
-  if (mode === "chain") {
-    let prevMergeId: string | null = null
-
-    mergeSteps.forEach((step, idx) => {
+  if (mode === "pairwise") {
+    steps.forEach((step, idx) => {
       const mergeId = `merge_${idx + 1}`
 
-      nodes.push({
-        id: mergeId,
-        label: `Merge ${idx + 1}`,
-        type: "merge",
-      })
+      nodes.push(
+        {
+          id: step.leftTableId,
+          type: "source",
+          label: step.leftTableId,
+        },
+        {
+          id: step.rightTableId,
+          type: "source",
+          label: step.rightTableId,
+        },
+        {
+          id: mergeId,
+          type: "merge",
+          label: `Merge ${idx + 1}`,
+        }
+      )
 
-      if (idx === 0) {
-        edges.push({
+      edges.push(
+        {
           from: step.leftTableId,
           to: mergeId,
           joinType: step.joinType,
           leftKeys: step.leftKeys,
           rightKeys: step.rightKeys,
-        })
-        edges.push({
+        },
+        {
           from: step.rightTableId,
           to: mergeId,
           joinType: step.joinType,
           leftKeys: step.leftKeys,
           rightKeys: step.rightKeys,
-        })
-      } else {
-        edges.push({
-          from: prevMergeId!,
-          to: mergeId,
-          joinType: step.joinType,
-          leftKeys: [],
-          rightKeys: [],
-        })
-        edges.push({
-          from: step.rightTableId,
-          to: mergeId,
-          joinType: step.joinType,
-          leftKeys: step.leftKeys,
-          rightKeys: step.rightKeys,
+        }
+      )
+    })
+
+    return { mode, nodes, edges }
+  }
+
+  const nodeMap = new Map<string, MergeNode>()
+
+  const getLabel = (id: string) => {
+    if (id.startsWith("merge_")) {
+      return id.replace("_", " ")
+    }
+    return tables.find((t) => t.id === id)?.name ?? id
+  }
+
+  steps.forEach((step, idx) => {
+    const mergeId = `merge_${idx + 1}`
+
+    // ⭐ CORE FIX: effective left
+    const leftId =
+      idx === 0 ? step.leftTableId : `merge_${idx}`
+
+    const rightId = step.rightTableId
+
+    ;[leftId, rightId, mergeId].forEach((id) => {
+      if (!nodeMap.has(id)) {
+        nodeMap.set(id, {
+          id,
+          type: id.startsWith("merge_")
+            ? "merge"
+            : "source",
+          label: getLabel(id),
         })
       }
-
-      prevMergeId = mergeId
     })
 
-    if (mergeSteps.length) {
-      nodes.push({ id: "result", label: "Result", type: "result" })
-      edges.push({
-        from: `merge_${mergeSteps.length}`,
-        to: "result",
-        joinType: "output",
-        leftKeys: [],
-        rightKeys: [],
-      })
-    }
-  }
-
-  if (mode === "pairwise") {
-    let idx = 0
-    mergeSteps.forEach((s) => {
-      idx++
-      const mergeId = `merge_${idx}`
-      nodes.push({ id: mergeId, label: `Merge ${idx}`, type: "merge" })
-      edges.push({
-        from: s.leftTableId,
+    edges.push(
+      {
+        from: leftId,
         to: mergeId,
-        joinType: s.joinType,
-        leftKeys: s.leftKeys,
-        rightKeys: s.rightKeys,
-      })
-      edges.push({
-        from: s.rightTableId,
+        joinType: step.joinType,
+        leftKeys: step.leftKeys,
+        rightKeys: step.rightKeys,
+      },
+      {
+        from: rightId,
         to: mergeId,
-        joinType: s.joinType,
-        leftKeys: s.leftKeys,
-        rightKeys: s.rightKeys,
-      })
-    })
+        joinType: step.joinType,
+        leftKeys: step.leftKeys,
+        rightKeys: step.rightKeys,
+      }
+    )
+  })
 
-    if (idx) {
-      nodes.push({ id: "result", label: "Result", type: "result" })
-      edges.push({
-        from: `merge_${idx}`,
-        to: "result",
-        joinType: "output",
-        leftKeys: [],
-        rightKeys: [],
-      })
-    }
+  return {
+    mode,
+    nodes: Array.from(nodeMap.values()),
+    edges,
   }
-
-  return { mode, nodes, edges }
 }
+

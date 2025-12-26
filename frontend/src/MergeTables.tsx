@@ -104,12 +104,6 @@ class MergeTables extends StreamlitComponentBase<State> {
 
   /* ================= update ================= */
 
-  setActiveStep(index: number) {
-    if (this.state.activeStepIndex !== index) {
-      this.setState({ activeStepIndex: index })
-    }
-  }
-
   updateStep = (index: number, patch: Partial<MergeStep>) => {
     this.setState(
       (prev) => ({
@@ -124,18 +118,26 @@ class MergeTables extends StreamlitComponentBase<State> {
   /* ================= validation ================= */
 
   validateMergeSteps() {
-    if (!this.state.mergeSteps.length)
-      return { valid: false }
+    if (!this.state.mergeSteps.length) return { valid: false }
 
-    for (const s of this.state.mergeSteps) {
-      if (
-        !s.leftKeys.length ||
-        !s.rightKeys.length ||
-        s.leftKeys.length !== s.rightKeys.length
-      ) {
-        return { valid: false }
+    for (let i = 0; i < this.state.mergeSteps.length; i++) {
+      const s = this.state.mergeSteps[i]
+
+      if (!s.leftKeys.length || !s.rightKeys.length) {
+        return {
+          valid: false,
+          reason: `Merge ${i + 1}: Please select key columns on both tables`,
+        }
+      }
+
+      if (s.leftKeys.length !== s.rightKeys.length) {
+        return {
+          valid: false,
+          reason: `Merge ${i + 1}: Number of key columns must match`,
+        }
       }
     }
+
     return { valid: true }
   }
 
@@ -152,10 +154,7 @@ class MergeTables extends StreamlitComponentBase<State> {
           ? this.state.mergeSteps.map((s, idx) =>
               idx === 0
                 ? s
-                : {
-                    ...s,
-                    leftTableId: `merge_${idx}`,
-                  }
+                : { ...s, leftTableId: `merge_${idx}` }
             )
           : this.state.mergeSteps
 
@@ -175,6 +174,11 @@ class MergeTables extends StreamlitComponentBase<State> {
       ? this.props.args.tables
       : []
 
+    const enableDag =
+      typeof this.props.args?.dag === "boolean"
+        ? this.props.args.dag
+        : true
+
     if (tables.length < 2) {
       return <div style={{ padding: 16 }}>Loading tables…</div>
     }
@@ -189,9 +193,7 @@ class MergeTables extends StreamlitComponentBase<State> {
             ? tables.find((t) => t.id === step.leftTableId)
             : mergeTables[idx - 1]
 
-        const right = tables.find(
-          (t) => t.id === step.rightTableId
-        )
+        const right = tables.find((t) => t.id === step.rightTableId)
 
         if (left && right) {
           mergeTables.push({
@@ -271,145 +273,112 @@ class MergeTables extends StreamlitComponentBase<State> {
           }}
         >
           {this.state.mergeSteps.map((step, idx) => {
-            const leftTable =
-              this.state.mergeMode === "chain" && idx > 0
-                ? mergeTables[idx - 1]
-                : tables.find(
-                    (t) => t.id === step.leftTableId
-                  )
+            const isChain = this.state.mergeMode === "chain"
+            const lockLeft = isChain && idx > 0
+
+            const leftTable = lockLeft
+              ? mergeTables[idx - 1]
+              : tables.find((t) => t.id === step.leftTableId)
 
             if (!leftTable) return null
 
-            const isLeftMergeTable =
-              leftTable.id.startsWith("merge_")
-
-            const isActive =
-              this.state.activeStepIndex === idx
-            const isDimmed =
-              this.state.activeStepIndex !== null &&
-              this.state.activeStepIndex !== idx
+            const invalid =
+              !step.leftKeys.length ||
+              !step.rightKeys.length ||
+              step.leftKeys.length !== step.rightKeys.length
 
             return (
               <div
                 key={idx}
-                onClick={() => this.setActiveStep(idx)}
                 style={{
                   padding: 16,
                   borderRadius: 12,
-                  border: isActive
-                    ? "2px solid #3b82f6"
+                  border: invalid
+                    ? "1px solid #fecaca"
                     : "1px solid #e5e7eb",
-                  background: isActive
-                    ? "#eff6ff"
-                    : "#ffffff",
-                  boxShadow: isActive
-                    ? "0 10px 28px rgba(59,130,246,0.18)"
-                    : "0 1px 3px rgba(0,0,0,0.08)",
-                  opacity: isDimmed ? 0.55 : 1,
-                  cursor: "pointer",
-                  transition: "all 0.18s ease",
+                  background: invalid ? "#fff1f2" : "#ffffff",
                 }}
               >
-                {/* STEP LABEL */}
-                <div
-                  style={{
-                    marginBottom: 12,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "#374151",
-                  }}
-                >
+                <div style={{ marginBottom: 12, fontWeight: 600 }}>
                   Merge {idx + 1}
                 </div>
 
-                {/* INPUT ROW */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 20,
-                  }}
-                >
+                <div style={{ display: "flex", gap: 20 }}>
                   {/* LEFT */}
-                  <div
-                    style={{ flex: 1, minWidth: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <TableCard
-                      tables={
-                        isLeftMergeTable ? [leftTable] : tables
-                      }
-                      selectedTableId={leftTable.id}
-                      selectedKeys={step.leftKeys}
-                      onTableChange={(id) => {
-                        if (isLeftMergeTable) return
-                        this.setActiveStep(idx)
-                        this.updateStep(idx, {
-                          leftTableId: id,
-                          leftKeys: [],
-                        })
-                      }}
-                      onKeysChange={(keys) => {
-                        this.setActiveStep(idx)
-                        this.updateStep(idx, {
-                          leftKeys: keys,
-                        })
-                      }}
-                    />
-                  </div>
+                  <TableCard
+                    tables={lockLeft ? [leftTable] : tables}
+                    selectedTableId={leftTable.id}
+                    disabledTableSelect={lockLeft}
+                    selectedKeys={step.leftKeys}
+                    onTableChange={(id) =>
+                      this.updateStep(idx, {
+                        leftTableId: id,
+                        leftKeys: [],
+                        rightTableId:
+                          step.rightTableId === id
+                            ? ""
+                            : step.rightTableId,
+                      })
+                    }
+                    onKeysChange={(keys) =>
+                      this.updateStep(idx, { leftKeys: keys })
+                    }
+                  />
 
-                  {/* JOIN */}
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <JoinConnector
-                      joinType={step.joinType}
-                      onChange={(t: JoinType) => {
-                        this.setActiveStep(idx)
-                        this.updateStep(idx, {
-                          joinType: t,
-                        })
-                      }}
-                    />
-                  </div>
+                  <JoinConnector
+                    joinType={step.joinType}
+                    onChange={(t: JoinType) =>
+                      this.updateStep(idx, { joinType: t })
+                    }
+                  />
 
                   {/* RIGHT */}
-                  <div
-                    style={{ flex: 1, minWidth: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <TableCard
-                      tables={tables.filter(
-                        (t) => t.id !== leftTable.id
-                      )}
-                      selectedTableId={step.rightTableId}
-                      selectedKeys={step.rightKeys}
-                      onTableChange={(id) => {
-                        this.setActiveStep(idx)
-                        this.updateStep(idx, {
-                          rightTableId: id,
-                          rightKeys: [],
-                        })
-                      }}
-                      onKeysChange={(keys) => {
-                        this.setActiveStep(idx)
-                        this.updateStep(idx, {
-                          rightKeys: keys,
-                        })
-                      }}
-                    />
-                  </div>
+                  <TableCard
+                    tables={tables.filter(
+                      (t) => t.id !== leftTable.id
+                    )}
+                    selectedTableId={step.rightTableId}
+                    selectedKeys={step.rightKeys}
+                    onTableChange={(id) =>
+                      this.updateStep(idx, {
+                        rightTableId: id,
+                        rightKeys: [],
+                      })
+                    }
+                    onKeysChange={(keys) =>
+                      this.updateStep(idx, { rightKeys: keys })
+                    }
+                  />
                 </div>
+
+                {invalid && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      fontSize: 12,
+                      color: "#b91c1c",
+                      background: "#fef2f2",
+                      border: "1px solid #fecaca",
+                      borderRadius: 8,
+                      padding: "6px 10px",
+                    }}
+                  >
+                    Please select key columns on both sides and ensure
+                    the number of keys matches
+                  </div>
+                )}
               </div>
             )
           })}
         </div>
 
         {/* ---------- DAG ---------- */}
-        <div style={{ marginTop: 24 }}>
-          <h4>DAG</h4>
-          <MergeDAGView dag={dag} />
-        </div>
+        {enableDag && (
+          <div style={{ marginTop: 24 }}>
+            <h4>DAG</h4>
+            <MergeDAGView dag={dag} />
+          </div>
+        )}
       </div>
     )
   }

@@ -84,7 +84,7 @@ def main():
     with st.container(border=True):
         merge_plan = merge_tables(
             tables=tables,
-            # dag=True,
+            dag=True,
             # value=st.session_state.merge_plan,
             key="merge_ui",
         )

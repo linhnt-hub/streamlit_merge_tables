@@ -248,3 +248,64 @@ body {
   stroke-width: 1;
   stroke: #111827;
 }
+
+.table-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 👁 trigger */
+.table-preview-trigger {
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.55;
+  user-select: none;
+}
+
+.table-preview-trigger.active,
+.table-preview-trigger:hover {
+  opacity: 1;
+}
+
+/* popover */
+.table-preview-popover {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  z-index: 60;
+
+  min-width: 220px;
+  max-width: 300px;
+  max-height: 240px;
+  overflow-y: auto;
+
+  background: var(--st-card);
+  border: 1px solid var(--st-border);
+  border-radius: 10px;
+  padding: 10px;
+
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.table-preview-popover ul {
+  margin: 6px 0 0;
+  padding-left: 14px;
+  font-size: 12px;
+}
+
+.preview-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--st-muted);
+}
+
+.preview-empty {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--st-muted);
+}
+.react-flow {
+  width: 100%;
+}
