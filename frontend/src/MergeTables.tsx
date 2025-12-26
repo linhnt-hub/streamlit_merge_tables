@@ -379,6 +379,9 @@ class MergeTables extends StreamlitComponentBase<State> {
             <MergeDAGView dag={dag} />
           </div>
         )}
+        <br/>
+        <br/>
+        <br/>
       </div>
     )
   }

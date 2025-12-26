@@ -1,6 +1,13 @@
-import { BaseEdge, EdgeProps, getBezierPath } from "reactflow"
+import React from "react"
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  EdgeProps,
+  getBezierPath,
+} from "reactflow"
 
 export default function CenteredBezierEdge({
+  id,
   sourceX,
   sourceY,
   targetX,
@@ -8,7 +15,7 @@ export default function CenteredBezierEdge({
   data,
   markerEnd,
 }: EdgeProps) {
-  const [path] = getBezierPath({
+  const [path, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
     targetX,
@@ -16,20 +23,36 @@ export default function CenteredBezierEdge({
     curvature: 0.35,
   })
 
+  const label = data?.label
   const stroke = data?.color ?? "#9ca3af"
 
   return (
-    <BaseEdge
-      path={path}
-      markerEnd={markerEnd}
-      animated={true}
-      type="default"
-      style={{
-        stroke,
-        strokeWidth: 1,
-        transition: "stroke 0.2s ease, stroke-width 0.2s ease",
-      }}
-      className="merge-edge"
-    />
+    <>
+      {/* EDGE PATH */}
+      <BaseEdge
+        id={id}
+        path={path}
+        markerEnd={markerEnd}
+        style={{
+          stroke,
+          strokeWidth: 1.2,
+        }}
+      />
+
+      {/* EDGE LABEL */}
+      {label && (
+        <EdgeLabelRenderer>
+          <div
+            className="merge-edge-label"
+            style={{
+              left: labelX,
+              top: labelY,
+            }}
+          >
+            {label}
+          </div>
+        </EdgeLabelRenderer>
+      )}
+    </>
   )
 }
