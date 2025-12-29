@@ -22,19 +22,19 @@ Instead, it returns a merge plan (dictionary) describing how tables should be jo
 ## Installation
 
 ### Install from PyPI
-
+```
 pip install streamlit-merge-tables
-
+```
 ### Install from GitHub
-
+```
 git clone https://github.com/linhnt-hub/streamlit-merge-tables.git
 cd streamlit-merge-tables
 pip install .
-
+```
 ---
 
 ## Quick Start
-
+```
 import streamlit as st
 import pandas as pd
 from streamlit_component import merge_tables
@@ -70,13 +70,13 @@ merge_plan = merge_tables(
 
 st.subheader("Merge plan")
 st.json(merge_plan)
-
+```
 ---
 
 ## Tables Schema
 
 The tables parameter defines table metadata only, not actual DataFrames.
-
+```
 tables = [
     {
         "id": "interfaces",
@@ -84,11 +84,11 @@ tables = [
         "columns": ["ifname", "speed", "status"],
     }
 ]
-
+```
 ---
 
 ## Merge Plan Output
-
+```
 {
   "mode": "chain",
   "steps": [
@@ -101,11 +101,11 @@ tables = [
     }
   ]
 }
-
+```
 ---
 
-![Merge UI](docs/images/merge_tables.jpg)
-![Merge Plan](docs/images/merge_plan.jpg)
+![Merge UI](doc/images/merge_tables.jpg)
+![Merge Plan](doc/images/merge_plan.jpg)
 
 ---
 
