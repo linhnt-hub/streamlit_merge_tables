@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/linhnt-hub/streamlit_merge_tables/compare/v1.0.3...v1.0.4) (2025-12-29)
+
+
+### Bug Fixes
+
+* change UI ([63fd073](https://github.com/linhnt-hub/streamlit_merge_tables/commit/63fd07355101b6264347d6bac5c020292e40b39e))
+
 ## [1.0.3](https://github.com/linhnt-hub/streamlit_merge_tables/compare/v1.0.2...v1.0.3) (2025-12-29)
 
 
