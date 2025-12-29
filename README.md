@@ -1,39 +1,44 @@
-streamlit-merge-tables is a Streamlit custom component that allows users to visually define merge (join) logic across multiple tables using an interactive UI.
+# streamlit-merge-tables
 
-The component does not merge data directly.
-Instead, it returns a merge plan (dictionary) describing how tables should be joined, leaving execution fully under developer control.
+`streamlit-merge-tables` is a Streamlit custom component that allows users to visually define merge (join) logic across multiple tables using an interactive UI.
 
-Features
+The component does not perform the actual data merge.
+Instead, it returns a merge plan (dictionary) describing how tables should be joined, giving developers full control over execution.
 
-Visual table merge builder
+---
 
-Chain and pairwise merge modes
+## Features
 
-Multiple join types: INNER, LEFT, RIGHT, OUTER
+- Visual table merge builder
+- Chain and pairwise merge modes
+- Multiple join types: INNER, LEFT, RIGHT, OUTER
+- Column-level join key selection
+- Built-in validation
+- Optional DAG visualization of merge flow
+- Framework-agnostic execution (pandas, SQL, backend services)
 
-Column-level join key selection
+---
 
-Built-in validation
+## Installation
 
-Optional DAG visualization of merge flow
+### Install from PyPI
 
-Framework-agnostic merge execution (pandas, SQL, backend APIs)
-
-Installation
-From PyPI
 pip install streamlit-merge-tables
 
-From GitHub
+### Install from GitHub
+
 git clone https://github.com/linhnt-hub/streamlit-merge-tables.git
 cd streamlit-merge-tables
 pip install .
 
-Quick Start (5-minute example)
+---
+
+## Quick Start
+
 import streamlit as st
 import pandas as pd
 from streamlit_component import merge_tables
 
-# Example data
 df_interfaces = pd.DataFrame({
     "ifname": ["ge-0/0/0", "ge-0/0/1"],
     "speed": [1000, 1000],
@@ -58,21 +63,20 @@ tables = [
     },
 ]
 
-merge_plan = merge_tables(tables=tables, dag=True)
+merge_plan = merge_tables(
+    tables=tables,
+    dag=True,
+)
 
 st.subheader("Merge plan")
 st.json(merge_plan)
 
+---
 
-At this point:
+## Tables Schema
 
-Users configure merge logic in the UI
+The tables parameter defines table metadata only, not actual DataFrames.
 
-merge_plan updates automatically
-
-You decide how and when to execute the merge
-
-Tables Schema
 tables = [
     {
         "id": "interfaces",
@@ -81,11 +85,10 @@ tables = [
     }
 ]
 
-Field	Description
-id	Unique internal identifier
-name	Display name in UI
-columns	Column names
-Merge Plan Output
+---
+
+## Merge Plan Output
+
 {
   "mode": "chain",
   "steps": [
@@ -99,46 +102,21 @@ Merge Plan Output
   ]
 }
 
-Developer Notes
+---
 
-The component never touches your DataFrames
+![Merge UI](docs/images/merge_tables.jpg)
+![Merge Plan](docs/images/merge_plan.jpg)
 
-It only emits merge logic
+---
 
-Perfect for:
+## Developer Notes
 
-pandas merges
+- This component does not merge data
+- It only produces merge logic
+- Developers control execution entirely
 
-SQL JOIN builders
+---
 
-Backend-driven pipelines
-
-No-code / low-code tools
-
-Example: Execute Merge with pandas
-result = pd.merge(
-    df_interfaces,
-    df_traffic,
-    left_on=["ifname"],
-    right_on=["ifname"],
-    how="inner",
-)
-
-Screenshots & Demo
-
-Add screenshots or GIFs here for GitHub:
-
-Merge UI overview
-
-Join key selection
-
-DAG visualization
-
-Recommended format:
-
-docs/images/merge-ui.png
-docs/images/merge-dag.gif
-
-License
+## License
 
 MIT License
