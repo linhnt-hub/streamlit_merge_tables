@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/linhnt-hub/streamlit_merge_tables/compare/v1.0.1...v1.0.2) (2025-12-29)
+
+
+### Bug Fixes
+
+* add readme.txt ([fd35215](https://github.com/linhnt-hub/streamlit_merge_tables/commit/fd3521504ec92a4d1414577dba0633affe41a760))
+* adjust DAG view ([fde1e79](https://github.com/linhnt-hub/streamlit_merge_tables/commit/fde1e79493aaa4061136592348dc46cdf4e06c79))
+
 ## [1.0.1](https://github.com/linhnt-hub/streamlit_merge_tables/compare/v1.0.0...v1.0.1) (2025-12-26)
 
 
