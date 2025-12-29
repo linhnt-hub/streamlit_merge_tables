@@ -48,7 +48,7 @@ function areKeyTypesCompatible(
   )
 }
 
-/* ===== GIAI ĐOẠN 2: auto-suggest join key (NHẸ) ===== */
+/* ===== auto-suggest join key ===== */
 
 function suggestJoinKeys(
   left?: TableMeta,
@@ -59,27 +59,21 @@ function suggestJoinKeys(
   const common = left.columns.filter((c) =>
     right.columns.includes(c)
   )
-
   if (!common.length) return null
 
-  // nếu có dtypes thì ưu tiên type match
   if (left.dtypes && right.dtypes) {
     const match = common.find(
       (c) => left.dtypes![c] === right.dtypes![c]
     )
-    if (match) {
-      return { left: [match], right: [match] }
-    }
+    if (match) return { left: [match], right: [match] }
   }
 
-  // fallback: cùng tên cột
   return { left: [common[0]], right: [common[0]] }
 }
 
 /* ================= state ================= */
 
 interface State {
-  tableCount: number
   mergeSteps: MergeStep[]
   mergeMode: "chain" | "pairwise"
 }
@@ -90,7 +84,6 @@ class MergeTables extends StreamlitComponentBase<State> {
   private emitTimer: number | null = null
 
   state: State = {
-    tableCount: 2,
     mergeSteps: [],
     mergeMode: "chain",
   }
@@ -98,26 +91,16 @@ class MergeTables extends StreamlitComponentBase<State> {
   /* ================= lifecycle ================= */
 
   componentDidMount() {
-    this.initializeStepsIfNeeded()
-    this.emitIfValid(0)
     Streamlit.setFrameHeight()
   }
 
-  componentDidUpdate(prevProps: any, prevState: State) {
-    if (
-      prevState.tableCount !== this.state.tableCount ||
-      prevState.mergeMode !== this.state.mergeMode ||
-      prevProps.args !== this.props.args
-    ) {
-      this.initializeStepsIfNeeded()
-    }
+  componentDidUpdate() {
     Streamlit.setFrameHeight()
   }
 
   /* ================= tables ================= */
 
   getTables(): TableMeta[] {
-    // backward compatible
     if (Array.isArray(this.props.args?.tables)) {
       return this.props.args.tables
     }
@@ -135,38 +118,40 @@ class MergeTables extends StreamlitComponentBase<State> {
     }))
   }
 
-  /* ================= initialize ================= */
+  /* ================= merge step control ================= */
 
-  initializeStepsIfNeeded() {
+  addMergeStep = () => {
     const tables = this.getTables()
-    if (tables.length < 2) return
+    if (!tables.length) return
 
-    const requiredSteps =
-      Math.min(this.state.tableCount, tables.length) - 1
-
-    this.setState((prev) => {
-      let steps = [...prev.mergeSteps]
-
-      while (steps.length < requiredSteps) {
-        const i = steps.length
-        steps.push({
-          leftTableId: tables[i].id,
-          rightTableId: tables[i + 1].id,
-          leftKeys: [],
-          rightKeys: [],
-          joinType: "inner",
-        })
-      }
-
-      if (steps.length > requiredSteps) {
-        steps = steps.slice(0, requiredSteps)
-      }
-
-      return { mergeSteps: steps }
-    })
+    this.setState(
+      (prev) => ({
+        mergeSteps: [
+          ...prev.mergeSteps,
+          {
+            leftTableId:
+              prev.mergeMode === "chain" && prev.mergeSteps.length > 0
+                ? `merge_${prev.mergeSteps.length}`
+                : tables[0].id,
+            rightTableId: tables[0].id,
+            leftKeys: [],
+            rightKeys: [],
+            joinType: "inner",
+          },
+        ],
+      }),
+      () => this.emitIfValid()
+    )
   }
 
-  /* ================= update ================= */
+  removeMergeStep = (index: number) => {
+    this.setState(
+      (prev) => ({
+        mergeSteps: prev.mergeSteps.filter((_, i) => i !== index),
+      }),
+      () => this.emitIfValid()
+    )
+  }
 
   updateStep = (index: number, patch: Partial<MergeStep>) => {
     this.setState(
@@ -182,32 +167,23 @@ class MergeTables extends StreamlitComponentBase<State> {
   /* ================= validation ================= */
 
   validateMergeSteps(tables: TableMeta[]) {
-    for (let i = 0; i < this.state.mergeSteps.length; i++) {
-      const s = this.state.mergeSteps[i]
+    for (const s of this.state.mergeSteps) {
       const left = tables.find((t) => t.id === s.leftTableId)
       const right = tables.find((t) => t.id === s.rightTableId)
 
-      if (!s.leftKeys.length || !s.rightKeys.length) {
-        return { valid: false }
-      }
-
-      if (s.leftKeys.length !== s.rightKeys.length) {
-        return { valid: false }
-      }
-
-      if (!areKeyTypesCompatible(left, right, s.leftKeys, s.rightKeys)) {
-        return { valid: false }
-      }
+      if (!s.leftKeys.length || !s.rightKeys.length) return false
+      if (s.leftKeys.length !== s.rightKeys.length) return false
+      if (!areKeyTypesCompatible(left, right, s.leftKeys, s.rightKeys))
+        return false
     }
-
-    return { valid: true }
+    return true
   }
 
   /* ================= emit ================= */
 
   emitIfValid(delay = 300) {
     const tables = this.getTables()
-    if (!this.validateMergeSteps(tables).valid) return
+    if (!this.validateMergeSteps(tables)) return
 
     if (this.emitTimer) window.clearTimeout(this.emitTimer)
 
@@ -237,36 +213,31 @@ class MergeTables extends StreamlitComponentBase<State> {
         ? this.props.args.dag
         : true
 
-    if (tables.length < 2) {
+    if (!tables.length) {
       return <div style={{ padding: 16 }}>Loading tables…</div>
     }
 
-    /* ---------- build merge-result tables ---------- */
+    /* ---------- build merge result tables ---------- */
+
     const mergeTables: TableMeta[] = []
 
-    if (this.state.mergeMode === "chain") {
-      this.state.mergeSteps.forEach((step, idx) => {
-        const left =
-          idx === 0
-            ? tables.find((t) => t.id === step.leftTableId)
-            : mergeTables[idx - 1]
+    this.state.mergeSteps.forEach((step, idx) => {
+      const left =
+        this.state.mergeMode === "chain" && idx > 0
+          ? mergeTables[idx - 1]
+          : tables.find((t) => t.id === step.leftTableId)
 
-        const right = tables.find((t) => t.id === step.rightTableId)
+      const right = tables.find((t) => t.id === step.rightTableId)
 
-        if (left && right) {
-          mergeTables.push({
-            id: `merge_${idx + 1}`,
-            name: `Merge ${idx + 1}`,
-            columns: mergeColumns(
-              left.columns,
-              right.columns,
-              right.name
-            ),
-            dtypes: {},
-          })
-        }
-      })
-    }
+      if (left && right) {
+        mergeTables.push({
+          id: `merge_${idx + 1}`,
+          name: `Merge ${idx + 1}`,
+          columns: mergeColumns(left.columns, right.columns, right.name),
+          dtypes: {},
+        })
+      }
+    })
 
     const dag = buildMergeDAG(
       tables,
@@ -279,27 +250,12 @@ class MergeTables extends StreamlitComponentBase<State> {
         {/* ---------- Toolbar ---------- */}
         <div className="merge-toolbar-wrapper">
           <div className="merge-toolbar">
-            <label className="toolbar-field">
-              <span className="toolbar-label">Tables</span>
-              <select
-                className="toolbar-select"
-                value={this.state.tableCount}
-                onChange={(e) =>
-                  this.setState({
-                    tableCount: Number(e.target.value),
-                  })
-                }
-              >
-                {Array.from(
-                  { length: tables.length - 1 },
-                  (_, i) => i + 2
-                ).map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <button
+              className="toolbar-button"
+              onClick={this.addMergeStep}
+            >
+              + Add
+            </button>
 
             <label className="toolbar-field">
               <span className="toolbar-label">Mode</span>
@@ -351,34 +307,35 @@ class MergeTables extends StreamlitComponentBase<State> {
                 ? suggestJoinKeys(leftTable, rightTable)
                 : null
 
-            const typeMismatch =
-              !areKeyTypesCompatible(
-                leftTable,
-                rightTable,
-                step.leftKeys,
-                step.rightKeys
-              )
-
-            const invalid =
-              !step.leftKeys.length ||
-              !step.rightKeys.length ||
-              step.leftKeys.length !== step.rightKeys.length ||
-              typeMismatch
-
             return (
               <div
                 key={idx}
                 style={{
                   padding: 16,
                   borderRadius: 12,
-                  border: invalid
-                    ? "1px solid #fecaca"
-                    : "1px solid #e5e7eb",
-                  background: invalid ? "#fff1f2" : "#ffffff",
+                  border: "1px solid #e5e7eb",
                 }}
               >
-                <div style={{ marginBottom: 12, fontWeight: 600 }}>
-                  Merge {idx + 1}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 12,
+                    fontWeight: 600,
+                  }}
+                >
+                  <div className="merge-header">
+                    <div className="merge-title">
+                      <span>Merge</span>
+                      <span className="merge-index">{idx + 1}</span>
+                    </div>
+                    <button
+                      className="merge-remove"
+                      onClick={() => this.removeMergeStep(idx)}
+                    >
+                      x
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: "flex", gap: 20 }}>
@@ -406,9 +363,7 @@ class MergeTables extends StreamlitComponentBase<State> {
                   />
 
                   <TableCard
-                    tables={tables.filter(
-                      (t) => t.id !== leftTable.id
-                    )}
+                    tables={tables}
                     selectedTableId={step.rightTableId}
                     selectedKeys={step.rightKeys}
                     onTableChange={(id) =>
@@ -439,22 +394,6 @@ class MergeTables extends StreamlitComponentBase<State> {
                     }
                   >
                     Suggested join key: <b>{suggestion.left[0]}</b>
-                  </div>
-                )}
-
-                {typeMismatch && (
-                  <div
-                    style={{
-                      marginTop: 10,
-                      fontSize: 12,
-                      color: "#92400e",
-                      background: "#fffbeb",
-                      border: "1px solid #fde68a",
-                      borderRadius: 8,
-                      padding: "6px 10px",
-                    }}
-                  >
-                    Selected key columns have incompatible data types
                   </div>
                 )}
               </div>

@@ -77,20 +77,20 @@ def main():
     # LOAD MERGE STATS (PREVIEW)
     # ------------------------------
     merge_stats = st.session_state.get("merge_stats", [])
-    # col1,col2 = st.columns([1,3])
-    # with col2:
-    if "merge_plan" not in st.session_state:
-        st.session_state.merge_plan = None
-    with st.container(border=True):
-        merge_plan = merge_tables(
-            tables=tables,
-            # tables=serialize_dataframes(dataframes),
-            dag=True,
-            # value=st.session_state.merge_plan,
-            key="merge_ui",
-        )
-    if merge_plan:
-        st.session_state.merge_plan = merge_plan
+    col1,col2 = st.columns([1,2])
+    with col2:
+        if "merge_plan" not in st.session_state:
+            st.session_state.merge_plan = None
+        with st.container(border=True):
+            merge_plan = merge_tables(
+                tables=tables,
+                # tables=serialize_dataframes(dataframes),
+                dag=True,
+                # value=st.session_state.merge_plan,
+                key="merge_ui",
+            )
+        if merge_plan:
+            st.session_state.merge_plan = merge_plan
 
     st.subheader("Returned Merge Plan")
     # st.write(serialize_dataframes(dataframes))

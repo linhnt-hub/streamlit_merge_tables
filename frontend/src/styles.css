@@ -29,226 +29,128 @@ body {
   color: var(--st-text);
 }
 
+/* =====================================================
+   MERGE FLOW LAYOUT
+   ===================================================== */
+
 .merge-flow {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 24px;
 }
 
+/* =====================================================
+   MERGE BLOCK
+   ===================================================== */
+
+.merge-flow > div {
+  background: color-mix(
+    in srgb,
+    var(--st-card) 85%,
+    transparent
+  );
+
+  border: 1px solid var(--st-border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Merge Header ---------- */
+/* ---------- Merge Header ---------- */
+
+.merge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* KEY */
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+/* LEFT */
+
+.merge-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--st-text);
+}
+
+/* index pill */
+
+.merge-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 26px;
+  height: 26px;
+
+  border-radius: 999px;
+  background: color-mix(
+    in srgb,
+    var(--st-primary) 12%,
+    transparent
+  );
+
+  color: var(--st-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* RIGHT – remove button */
+
+.merge-remove {
+  margin-left: auto; 
+  border: 1px solid var(--st-primary);
+  background: var(--st-bg);
+  color: var(--st-primary);
+  /* cursor: pointer; */
+  border-radius: var(--radius);
+  padding: 6px 12px;
+}
+.merge-remove:hover {
+  background: color-mix(
+    in srgb,
+    #dc2626 10%,
+    transparent
+  );
+}
+
+.merge-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, #dc2626 35%, transparent);
+}
+
+.merge-remove:active {
+  transform: translateY(1px);
+}
+
+/* =====================================================
+   TABLE CARD (GLASS)
+   ===================================================== */
+
 .table-card {
-  /* Glass background */
   background: color-mix(
     in srgb,
     var(--st-card) 75%,
     transparent
   );
 
-  /* Glass effect */
   backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
 
-  /* Border */
-  border: 1px solid color-mix(
-    in srgb,
-    var(--st-text) 12%,
-    transparent
-  );
-
+  border: 1px solid var(--st-border);
   border-radius: var(--radius);
   padding: 12px;
-  /* width: 300px; */
-  /* min-width: 300px; */
-  /* max-width: 300px; */
 
-  /* Soft shadow */
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.table-select {
-  width: 100%;
-  padding: 6px 8px;
-  border-radius: var(--radius);
-  border: 1px solid var(--st-border);
-  background: var(--st-bg);
-  color: var(--st-text);
-}
-
-.table-select:focus {
-  outline: none;
-  border-color: var(--st-primary);
-  box-shadow: 0 0 0 1px var(--st-primary);
-}
-
-.chip-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.chip {
-  padding: 4px 8px;
-  border-radius: var(--radius);
-  font-size: 12px;
-  border: 1px solid var(--st-border);
-  cursor: pointer;
-  background: var(--st-bg);
-}
-
-.chip.active {
-  background: var(--st-primary);
-  color: white;
-  border-color: var(--st-primary);
-}
-
-.chip-hint {
-  margin-top: 6px;
-  font-size: 11px;
-  color: var(--st-muted);
-}
-.merge-canvas {
-  overflow-x: auto;
-  padding: 12px 4px;
-}
-
-.footer-actions {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-start;
-  gap: 10px;
-}
-
-.footer-actions button.primary {
-  background: var(--st-primary);
-  color: white;
-  border: none;
-  border-radius: var(--radius);
-  padding: 8px 16px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.footer-actions button.primary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.footer-actions button.primary:hover:not(:disabled) {
-  filter: brightness(0.95);
-}
-
-.footer-actions button.primary:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--st-primary) 40%, transparent);
-}
-
-.join-connector {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 8px;
-}
-
-.join-connector select {
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 12px;
-  border: 1px solid var(--st-border);
-  background: var(--st-bg);
-  color: var(--st-text);
-}
-.merge-toolbar-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.merge-toolbar {
-  display: flex;
-  align-self: center;
-  gap: 16px;
-
-  width: fit-content;
-  max-width: 100%;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-
-  background: var(--st-card);
-  border: 1px solid var(--st-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-}
-.toolbar-field {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* tăng khoảng cách */
-  position: relative;
-}
-.toolbar-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--st-muted);
-  white-space: nowrap;
-}
-.toolbar-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  padding: 6px 28px 6px 12px;
-  min-height: 28px;
-  font-size: 12px;
-  font-weight: 500;
-
-  border-radius: 999px;
-  border: 1px solid var(--st-control-border);
-
-  background: var(--st-card);
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
-
-  color: var(--st-text);
-  cursor: pointer;
-}
-.toolbar-select:hover {
-  border-color: color-mix(
-    in srgb,
-    var(--st-text) 18%,
-    transparent
-  );
-}
-
-.toolbar-select:focus {
-  outline: none;
-  border-color: var(--st-primary);
-  box-shadow: 0 0 0 1px
-    color-mix(in srgb, var(--st-primary) 35%, transparent);
-}
-
-.primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-@media (max-width: 600px) {
-  .primary span {
-    display: none;
-  }
-}
-* {
-  transition:
-    background-color 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.merge-edge:hover {
-  stroke-width: 1;
-  stroke: #111827;
 }
 
 .table-header {
@@ -258,7 +160,25 @@ body {
   gap: 6px;
 }
 
-/* 👁 trigger */
+.table-select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--st-border);
+  background: var(--st-bg);
+  color: var(--st-text);
+  font-size: 12px;
+}
+
+.table-select:focus {
+  outline: none;
+  border-color: var(--st-primary);
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--st-primary) 40%, transparent);
+}
+
+/* 👁 preview trigger */
+
 .table-preview-trigger {
   font-size: 13px;
   cursor: pointer;
@@ -266,12 +186,13 @@ body {
   user-select: none;
 }
 
-.table-preview-trigger.active,
-.table-preview-trigger:hover {
+.table-preview-trigger:hover,
+.table-preview-trigger.active {
   opacity: 1;
 }
 
-/* popover */
+/* preview popover */
+
 .table-preview-popover {
   position: absolute;
   top: 110%;
@@ -291,12 +212,6 @@ body {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
 }
 
-.table-preview-popover ul {
-  margin: 6px 0 0;
-  padding-left: 14px;
-  font-size: 12px;
-}
-
 .preview-title {
   font-size: 12px;
   font-weight: 600;
@@ -308,9 +223,217 @@ body {
   font-size: 12px;
   color: var(--st-muted);
 }
+
+.table-preview-popover ul {
+  margin: 6px 0 0;
+  padding-left: 14px;
+  font-size: 12px;
+}
+
+/* =====================================================
+   COLUMN CHIPS
+   ===================================================== */
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chip {
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  border: 1px solid var(--st-border);
+  cursor: pointer;
+  background: var(--st-bg);
+}
+
+.chip:hover {
+  background: color-mix(
+    in srgb,
+    var(--st-text) 6%,
+    transparent
+  );
+}
+
+.chip.active {
+  background: var(--st-primary);
+  color: white;
+  border-color: var(--st-primary);
+}
+
+.chip-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--st-muted);
+}
+
+/* =====================================================
+   JOIN CONNECTOR
+   ===================================================== */
+
+.join-connector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 8px;
+}
+
+.join-connector select {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid var(--st-border);
+  background: var(--st-bg);
+  color: var(--st-text);
+}
+
+/* =====================================================
+   TOOLBAR
+   ===================================================== */
+
+.merge-toolbar-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.merge-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+
+  background: var(--st-card);
+  border: 1px solid var(--st-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.toolbar-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbar-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--st-muted);
+  white-space: nowrap;
+}
+
+.toolbar-select {
+  appearance: none;
+  padding: 6px 28px 6px 12px;
+  min-height: 28px;
+  font-size: 12px;
+  font-weight: 500;
+
+  border-radius: 999px;
+  border: 1px solid var(--st-border);
+  background: var(--st-bg);
+  color: var(--st-text);
+  cursor: pointer;
+}
+
+.toolbar-select:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--st-text) 18%,
+    transparent
+  );
+}
+
+.toolbar-select:focus {
+  outline: none;
+  border-color: var(--st-primary);
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--st-primary) 35%, transparent);
+}
+
+/* Add merge button */
+
+.toolbar-button {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+
+  border: 1px solid var(--st-primary);
+  background: var(--st-bg);
+  color: var(--st-primary);
+
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toolbar-button:hover {
+  background: color-mix(
+    in srgb,
+    var(--st-primary) 10%,
+    transparent
+  );
+}
+
+.toolbar-button:active {
+  transform: translateY(1px);
+}
+
+/* =====================================================
+   FOOTER ACTIONS
+   ===================================================== */
+
+.footer-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.footer-actions button.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  background: var(--st-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.footer-actions button.primary:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.footer-actions button.primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.footer-actions button.primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--st-primary) 40%, transparent);
+}
+
+/* =====================================================
+   DAG / REACT FLOW
+   ===================================================== */
+
 .react-flow {
   width: 100%;
 }
+
 .react-flow__edge-path {
   stroke-dasharray: 6 4;
   animation: merge-edge-flow 1.2s linear infinite;
@@ -320,6 +443,11 @@ body {
   to {
     stroke-dashoffset: -10;
   }
+}
+
+.merge-edge:hover {
+  stroke-width: 1;
+  stroke: #111827;
 }
 
 .merge-edge-label {
@@ -340,4 +468,16 @@ body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 
   color: #111827;
+}
+
+/* =====================================================
+   GLOBAL TRANSITION
+   ===================================================== */
+
+* {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
 }
