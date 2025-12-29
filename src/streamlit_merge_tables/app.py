@@ -84,6 +84,7 @@ def main():
     with st.container(border=True):
         merge_plan = merge_tables(
             tables=tables,
+            # tables=serialize_dataframes(dataframes),
             dag=True,
             # value=st.session_state.merge_plan,
             key="merge_ui",
@@ -92,7 +93,7 @@ def main():
         st.session_state.merge_plan = merge_plan
 
     st.subheader("Returned Merge Plan")
-
+    # st.write(serialize_dataframes(dataframes))
     if not merge_plan:
         st.info("Chưa có merge plan – hãy chọn table và bấm Save")
     elif "steps" not in merge_plan or not merge_plan["steps"]:

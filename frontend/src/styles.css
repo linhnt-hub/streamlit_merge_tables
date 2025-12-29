@@ -56,7 +56,9 @@ body {
 
   border-radius: var(--radius);
   padding: 12px;
-  min-width: 220px;
+  /* width: 300px; */
+  /* min-width: 300px; */
+  /* max-width: 300px; */
 
   /* Soft shadow */
   box-shadow:

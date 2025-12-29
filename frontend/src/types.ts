@@ -4,6 +4,7 @@ export interface TableMeta {
   id: string
   name: string
   columns: string[]
+  dtypes?: Record<string, string>
 }
 
 export interface MergeStep {
