@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/linhnt-hub/streamlit_merge_tables/compare/v1.0.2...v1.0.3) (2025-12-29)
+
+
+### Bug Fixes
+
+* formatting and update image paths in README ([6d0ab88](https://github.com/linhnt-hub/streamlit_merge_tables/commit/6d0ab889d4e5aa13662805c99ea623ede478ca80))
+
 ## [1.0.2](https://github.com/linhnt-hub/streamlit_merge_tables/compare/v1.0.1...v1.0.2) (2025-12-29)
 
 
